@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, stdin};
 
 #[derive(Parser, Debug)]
 #[clap(
@@ -19,6 +19,18 @@ struct Opts {
 	formula_file: Option<String>,
 }
 
+struct RpnCalculator(bool);
+
+impl RpnCalculator {
+	pub fn new(verbose: bool) -> Self {
+		Self(verbose)
+	}
+
+	pub fn eval(&self, formula: &str) -> i32 {
+		0
+	}
+}
+
 fn main() {
     let opts = Opts::parse();
 
@@ -27,13 +39,18 @@ fn main() {
 		let reader = BufReader::new(f);
 		run(reader, opts.verbose);
 	}else{
-		println!("No formula");
+		let stdin = stdin();
+		let reader = stdin.lock();
+		run(reader, opts.verbose);
 	}
 }
 
-fn run(reader: BufReader<File>, verbose: bool){
+fn run<R:BufRead>(reader: R, verbose: bool){
+	let calc = RpnCalculator::new(verbose);
+	
 	for line in reader.lines(){
 		let line = line.unwrap();
-		println!("{}", line);
+		let answer = calc.eval(&line);
+		println!("{}", answer);
 	}
 }
